@@ -1,7 +1,8 @@
 <?php
 
   //POST送信が行われたら、下記の処理を実行
-  if(isset($_POST)){
+  //テストコメント
+  if(isset($_POST) && !empty($_POST)){
 
     //データベースに接続
 
