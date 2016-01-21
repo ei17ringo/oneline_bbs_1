@@ -15,6 +15,16 @@
   // 接続したDBオブジェクトで文字コードutf8を使うように指定
   $dbh->query('SET NAMES utf8');
 
+  //GET送信が行われたら、編集処理を実行
+  // $action = $_GET['action'];
+  // var_dump($action);
+  if (isset($_GET['action']) && ($_GET['action'] == 'edit')){
+    //編集したいデータを取得するSQL文を作成
+
+    //SQL文を実行
+
+  }
+
   //POST送信が行われたら、下記の処理を実行
   //テストコメント
   if(isset($_POST) && !empty($_POST)){
@@ -146,12 +156,13 @@
         <article class="timeline-entry">
 
             <div class="timeline-entry-inner">
-
-                <div class="timeline-icon bg-success">
-                    <i class="entypo-feather"></i>
-                    <i class="fa fa-cogs"></i>
-                </div>
-
+                <a href="bbs.php?action=edit&id=<?php echo $post['id'];?>">
+                  <div class="timeline-icon bg-success">
+                      <i class="entypo-feather"></i>
+                      <i class="fa fa-cogs"></i>
+                  </div>
+                </a>
+                
                 <div class="timeline-label">
                     <h2><a href="#"><?php echo $post['nickname'];?></a> 
                       <?php
