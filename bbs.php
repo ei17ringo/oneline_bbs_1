@@ -19,7 +19,7 @@
   // $action = $_GET['action'];
   // var_dump($action);
   if (isset($_GET['action']) && ($_GET['action'] == 'edit')){
-    //編集したいデータを取得するSQL文を作成
+    //編集したいデータを取得するSQL文を作成（SELECT文）
 
     //SQL文を実行
 
