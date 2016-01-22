@@ -37,6 +37,15 @@
     $id = $rec['id'];
   }
 
+  if (isset($_GET['action']) && ($_GET['action'] == 'delete')){
+    $deletesql = "DELETE FROM `posts` WHERE `id`=".$_GET['id'];
+  
+    //SQL文を実行
+    $stmt = $dbh->prepare($deletesql);
+    $stmt->execute();
+
+  }
+
   //POST送信が行われたら、下記の処理を実行
   //テストコメント
   if(isset($_POST) && !empty($_POST)){
@@ -63,7 +72,7 @@
   }
 
   //SQL文作成(SELECT文)
-  $sql = 'SELECT * FROM `posts`';
+  $sql = 'SELECT * FROM `posts` ORDER BY `created` DESC';
   
   //SQL文実行
   $stmt = $dbh->prepare($sql);
@@ -118,7 +127,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="#page-top"><span class="strong-title"><i class="fa fa-linux"></i> Oneline bbs</span></a>
+              <a class="navbar-brand" href="#page-top"><span class="strong-title"><i class="fa fa-comment-o"></i> Oneline bbs</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -185,7 +194,7 @@
                 <a href="bbs.php?action=edit&id=<?php echo $post['id'];?>">
                   <div class="timeline-icon bg-success">
                       <i class="entypo-feather"></i>
-                      <i class="fa fa-cogs"></i>
+                      <i class="fa fa-flag"></i>
                   </div>
                 </a>
                 
@@ -202,6 +211,7 @@
                       <span><?php echo $created;?></span>
                     </h2>
                     <p><?php echo $post['comment'];?></p>
+                    <a href="bbs.php?action=delete&id=<?php echo $post['id'];?>"><i class="fa fa-trash fa-lg"></i></a>
                 </div>
             </div>
 
