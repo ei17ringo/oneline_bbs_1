@@ -18,22 +18,43 @@
   //GET送信が行われたら、編集処理を実行
   // $action = $_GET['action'];
   // var_dump($action);
+  $editname='';
+  $editcomment = '';
+  $id = '';
   if (isset($_GET['action']) && ($_GET['action'] == 'edit')){
     //編集したいデータを取得するSQL文を作成（SELECT文）
+    $selectsql = 'SELECT * FROM `posts` WHERE `id`='.$_GET['id'];
+
 
     //SQL文を実行
+    $stmt = $dbh->prepare($selectsql);
+    $stmt->execute();
 
+    $rec = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $editname = $rec['nickname'];
+    $editcomment = $rec['comment'];
+    $id = $rec['id'];
   }
 
   //POST送信が行われたら、下記の処理を実行
   //テストコメント
   if(isset($_POST) && !empty($_POST)){
 
+    var_dump($_POST);
 
+    if (isset($_POST['update'])){
+      //Update文を実行
+      $sql = "UPDATE `posts` SET `nickname`='".$_POST['nickname']."',`comment`='".$_POST['comment'];
+      $sql .= "',`created`=now() WHERE `id`=".$_POST['id'];
 
-    //SQL文作成(INSERT文)
-    $sql = "INSERT INTO `posts`(`nickname`, `comment`, `created`) ";
-    $sql .="VALUES ('".$_POST['nickname']."','".$_POST['comment']."',now())";
+    }else{
+      //Insert文を実行
+      //SQL文作成(INSERT文)
+      $sql = "INSERT INTO `posts`(`nickname`, `comment`, `created`) ";
+      $sql .= " VALUES ('".$_POST['nickname']."','".$_POST['comment']."',now())";
+
+    }
 
     //var_dump($sql);
     //INSERT文実行
@@ -128,7 +149,7 @@
       <div class="form-group">
             <div class="input-group">
               <input type="text" name="nickname" class="form-control"
-                       id="validate-text" placeholder="nickname" required>
+                       id="validate-text" placeholder="nickname" value="<?php echo $editname; ?>" required>
 
               <span class="input-group-addon danger"><span class="glyphicon glyphicon-remove"></span></span>
             </div>
@@ -136,12 +157,17 @@
       </div>
       <div class="form-group">
             <div class="input-group" data-validate="length" data-length="4">
-              <textarea type="text" class="form-control" name="comment" id="validate-length" placeholder="comment" required></textarea>
+              <textarea type="text" class="form-control" name="comment" id="validate-length" placeholder="comment" required><?php echo $editcomment; ?></textarea>
               <span class="input-group-addon danger"><span class="glyphicon glyphicon-remove"></span></span>
             </div>
       </div>
 
-      <button type="submit"  class="btn btn-primary col-xs-12" disabled>つぶやく</button>
+      <?php if ($editname == ''){ ?>
+      <button type="submit"　name="insert"  class="btn btn-primary col-xs-12" disabled>つぶやく</button>
+      <?php }else{ ?>
+      <input type="hidden" name="id" value="<?php echo $id;?>">
+      <button type="submit" name="update" class="btn btn-primary col-xs-12" disabled>変更する</button>
+      <?php } ?>
     </form>
 
       </div>
