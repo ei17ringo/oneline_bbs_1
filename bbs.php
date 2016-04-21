@@ -1,105 +1,63 @@
 <?php
 
-  //echo 'POST送信された！';
-  //データベースに接続
-  // ステップ1.db接続
-  $dsn = 'mysql:dbname=oneline_bbs;host=localhost';
-    
-  // 接続するためのユーザー情報
-  $user = 'root';
-  $password = '';
+  require('dbconnect.php');
 
-  // DB接続オブジェクトを作成
-  $dbh = new PDO($dsn,$user,$password);
-
-  // 接続したDBオブジェクトで文字コードutf8を使うように指定
-  $dbh->query('SET NAMES utf8');
-
-  //GET送信が行われたら、編集処理を実行
-  // $action = $_GET['action'];
-  // var_dump($action);
-  $editname='';
-  $editcomment = '';
-  $id = '';
-  if (isset($_GET['action']) && ($_GET['action'] == 'edit')){
-    //編集したいデータを取得するSQL文を作成（SELECT文）
-    $selectsql = 'SELECT * FROM `posts` WHERE `id`='.$_GET['id'];
-
-
-    //SQL文を実行
-    $stmt = $dbh->prepare($selectsql);
-    $stmt->execute();
-
-    $rec = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    $editname = $rec['nickname'];
-    $editcomment = $rec['comment'];
-    $id = $rec['id'];
-  }
-
+  //削除ボタンが押された時の処理
   if (isset($_GET['action']) && ($_GET['action'] == 'delete')){
-    $deletesql = "DELETE FROM `posts` WHERE `id`=".$_GET['id'];
-  
-    //SQL文を実行
+    $deletesql = sprintf('DELETE FROM `posts` WHERE `id`=%s',$_GET['id']);
+
+    //DELETE文実行
     $stmt = $dbh->prepare($deletesql);
     $stmt->execute();
-
   }
+
+
 
   //POST送信が行われたら、下記の処理を実行
   //テストコメント
   if(isset($_POST) && !empty($_POST)){
 
-    var_dump($_POST);
+ 
+    //SQL文作成(INSERT文)
+    // $sql = 'INSERT INTO `posts`(`nickname`, `comment`, `created`) ';
+    // $sql .= 'VALUES (\''.$_POST['nickname'].'\',\''.$_POST['comment'].'\',now())';
+    $sql = sprintf('INSERT INTO `posts`(`nickname`, `comment`, `created`) VALUES (\'%s\',\'%s\',now())',$_POST['nickname'],$_POST['comment']);
 
-    if (isset($_POST['update'])){
-      //Update文を実行
-      $sql = "UPDATE `posts` SET `nickname`='".$_POST['nickname']."',`comment`='".$_POST['comment'];
-      $sql .= "',`created`=now() WHERE `id`=".$_POST['id'];
 
-    }else{
-      //Insert文を実行
-      //SQL文作成(INSERT文)
-      $sql = "INSERT INTO `posts`(`nickname`, `comment`, `created`) ";
-      $sql .= " VALUES ('".$_POST['nickname']."','".$_POST['comment']."',now())";
-
-    }
-
-    //var_dump($sql);
     //INSERT文実行
-    $stmt=$dbh->prepare($sql);
+    $stmt = $dbh->prepare($sql);
     $stmt->execute();
+
+
+    
   }
 
+
   //SQL文作成(SELECT文)
-  $sql = 'SELECT * FROM `posts` ORDER BY `created` DESC';
+  $sql = 'SELECT * FROM `posts`';
   
-  //SQL文実行
+  //SELECT文実行
   $stmt = $dbh->prepare($sql);
   $stmt->execute();
 
+  //格納する変数の初期化
   $posts = array();
 
-  //var_dump($stmt);
   while(1){
 
-    //実行結果として得られたデータを表示
+    //実行結果として得られたデータを取得
     $rec = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if($rec == false){
       break;
     }
 
-    $posts[]=$rec;
-    // echo $rec['id'];
-    // echo $rec['nickname'];
-    // echo $rec['comment'];
-    // echo $rec['created'];
-
-
+    // 取得したデータを配列に格納しておく
+    $posts[] = $rec;
   }
-    //データベースから切断
-    $dbh=null;
+
+  //データベースから切断
+  $dbh = null;
 ?>
 
 <!DOCTYPE html>
@@ -114,9 +72,9 @@
   <link rel="stylesheet" href="assets/css/form.css">
   <link rel="stylesheet" href="assets/css/timeline.css">
   <link rel="stylesheet" href="assets/css/main.css">
-
 </head>
 <body>
+
   <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
           <!-- Brand and toggle get grouped for better mobile display -->
@@ -127,7 +85,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="#page-top"><span class="strong-title"><i class="fa fa-comment-o"></i> Oneline bbs</span></a>
+              <a class="navbar-brand" href="#page-top"><span class="strong-title"><i class="fa fa-linux"></i> Oneline bbs</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -150,35 +108,30 @@
       </div>
       <!-- /.container-fluid -->
   </nav>
+
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
- 
-    <form action="bbs.php" method="post">
-      <div class="form-group">
+        <form method="post">
+          <div class="form-group">
             <div class="input-group">
               <input type="text" name="nickname" class="form-control"
-                       id="validate-text" placeholder="nickname" value="<?php echo $editname; ?>" required>
+                       id="validate-text" placeholder="nickname" required>
 
               <span class="input-group-addon danger"><span class="glyphicon glyphicon-remove"></span></span>
             </div>
             
-      </div>
-      <div class="form-group">
+          </div>
+
+          <div class="form-group">
             <div class="input-group" data-validate="length" data-length="4">
-              <textarea type="text" class="form-control" name="comment" id="validate-length" placeholder="comment" required><?php echo $editcomment; ?></textarea>
+              <textarea type="text" class="form-control" name="comment" id="validate-length" placeholder="comment" required></textarea>
               <span class="input-group-addon danger"><span class="glyphicon glyphicon-remove"></span></span>
             </div>
-      </div>
+          </div>
 
-      <?php if ($editname == ''){ ?>
-      <button type="submit"　name="insert"  class="btn btn-primary col-xs-12" disabled>つぶやく</button>
-      <?php }else{ ?>
-      <input type="hidden" name="id" value="<?php echo $id;?>">
-      <button type="submit" name="update" class="btn btn-primary col-xs-12" disabled>変更する</button>
-      <?php } ?>
-    </form>
-
+          <button type="submit" class="btn btn-primary col-xs-12" disabled>つぶやく</button>
+        </form>
       </div>
 
       <div class="col-md-8 content-margin-top">
@@ -186,40 +139,36 @@
         <div class="timeline-centered">
 
         <?php
-        foreach ($posts as $post) { ?>
-
+            //指定した配列のデータ数分繰り返しを行う
+            foreach ($posts as $post_each) {
+        ?>
         <article class="timeline-entry">
 
             <div class="timeline-entry-inner">
-                <a href="bbs.php?action=edit&id=<?php echo $post['id'];?>">
-                  <div class="timeline-icon bg-success">
-                      <i class="entypo-feather"></i>
-                      <i class="fa fa-flag"></i>
-                  </div>
-                </a>
-                
+
+                <div class="timeline-icon bg-success">
+                    <i class="entypo-feather"></i>
+                    <i class="fa fa-cogs"></i>
+                </div>
+
                 <div class="timeline-label">
-                    <h2><a href="#"><?php echo $post['nickname'];?></a> 
-                      <?php
-                          //一旦日時型に変換
-                          $created = strtotime($post['created']);
-
-                          //書式を変換
-                          $created = date('Y/m/d',$created);                          
-                      ?>
-
-                      <span><?php echo $created;?></span>
-                    </h2>
-                    <p><?php echo $post['comment'];?></p>
-                    <a href="bbs.php?action=delete&id=<?php echo $post['id'];?>"><i class="fa fa-trash fa-lg"></i></a>
+                    <h2><a href="#"><?php echo $post_each['nickname']; ?></a> <span><?php echo $post_each['created']; ?></span></h2>
+                    <p><?php echo $post_each['comment']; ?></p>
+                    <a onclick="return confirm('本当に削除しますか？');" href="bbs.php?action=delete&id=<?php echo $post_each['id']; ?>" style="position: absolute;right:10px;bottom:10px;"><i class="fa fa-trash fa-lg"></i></a>
                 </div>
             </div>
 
         </article>
 
         <?php
-        }
+              // echo '<h2><a href="#">'.$post_each['nickname'].'</a> <span>'.$post_each['created'].'</span></h2>';
+              // echo '<p>'.$post_each['comment'].'</p>';
+        
+
+            }
+
         ?>
+
         <article class="timeline-entry begin">
 
             <div class="timeline-entry-inner">
@@ -247,7 +196,6 @@
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="assets/js/bootstrap.js"></script>
   <script src="assets/js/form.js"></script>
-
 </body>
 </html>
 
