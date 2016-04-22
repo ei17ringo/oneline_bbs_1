@@ -4,17 +4,35 @@
 
   //削除ボタンが押された時の処理
   if (isset($_GET['action']) && ($_GET['action'] == 'delete')){
-    $deletesql = sprintf('DELETE FROM `posts` WHERE `id`=%s',$_GET['id']);
+    //$deletesql = sprintf('DELETE FROM `posts` WHERE `id`=%s',$_GET['id']);
+
+    // 論理削除に変更
+    // Update文
+    $deletesql = sprintf('UPDATE `posts` SET `delete_flag` = 1 WHERE `id` = %s;',$_GET['id']);
 
     //DELETE文実行
     $stmt = $dbh->prepare($deletesql);
     $stmt->execute();
+
+    // 処理の再実行を防ぐために、自画面へリダイレクト（画面移動）
+    header('Location:bbs.php');
+  }
+
+  //LIKEが押された時の処理
+  if (isset($_GET['action']) && ($_GET['action'] == 'like')){
+    //Update文でLIKEの数をカウントアップ（インクリメント）
+    $likesql = sprintf('UPDATE `posts` SET `likes` = `likes` + 1 WHERE `id` = %s;',$_GET['id']);
+
+    //UPDATE実行
+    $stmt = $dbh->prepare($likesql);
+    $stmt->execute();
+
+   // 処理の再実行を防ぐために、自画面へリダイレクト（画面移動）
+    header('Location:bbs.php');
   }
 
 
-
   //POST送信が行われたら、下記の処理を実行
-  //テストコメント
   if(isset($_POST) && !empty($_POST)){
 
  
@@ -28,13 +46,14 @@
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
 
-
+    // 処理の再実行を防ぐために、自画面へリダイレクト（画面移動）
+    header('Location:bbs.php');
     
   }
 
 
   //SQL文作成(SELECT文)
-  $sql = 'SELECT * FROM `posts`';
+  $sql = 'SELECT * FROM `posts` WHERE `delete_flag` = 0 ORDER BY `created` DESC';
   
   //SELECT文実行
   $stmt = $dbh->prepare($sql);
@@ -72,6 +91,7 @@
   <link rel="stylesheet" href="assets/css/form.css">
   <link rel="stylesheet" href="assets/css/timeline.css">
   <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/article.css">
 </head>
 <body>
 
@@ -152,9 +172,25 @@
                 </div>
 
                 <div class="timeline-label">
-                    <h2><a href="#"><?php echo $post_each['nickname']; ?></a> <span><?php echo $post_each['created']; ?></span></h2>
+                    <h2><a href="#"><?php echo $post_each['nickname']; ?></a> 
+                      <?php 
+                          //一旦日時型に変換(String型からDatetime型へ変換)
+                          $created = strtotime($post_each['created']);
+
+                          //書式を変換
+                          $created = date('Y年m月d日 H時i分s秒',$created);
+
+                      ?>
+
+
+                      <!-- <span><?php //echo $post_each['created']; ?></span> -->
+                      <span><?php echo $created; ?></span>
+
+
+                    </h2>
                     <p><?php echo $post_each['comment']; ?></p>
-                    <a onclick="return confirm('本当に削除しますか？');" href="bbs.php?action=delete&id=<?php echo $post_each['id']; ?>" style="position: absolute;right:10px;bottom:10px;"><i class="fa fa-trash fa-lg"></i></a>
+                    <a href="bbs.php?action=like&id=<?php echo $post_each['id']; ?>"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i> LIKE <?php echo $post_each['likes']; ?></a>
+                    <a onclick="return confirm('本当に削除しますか？');" href="bbs.php?action=delete&id=<?php echo $post_each['id']; ?>" class="trash"><i class="fa fa-trash fa-lg"></i></a>
                 </div>
             </div>
 

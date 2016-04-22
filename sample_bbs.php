@@ -154,7 +154,7 @@
     <div class="row">
       <div class="col-md-4 content-margin-top">
  
-    <form action="bbs.php" method="post">
+    <form method="post">
       <div class="form-group">
             <div class="input-group">
               <input type="text" name="nickname" class="form-control"
@@ -211,7 +211,7 @@
                         <span><?php echo $created;?></span>
                       </h2>
                       <p><?php echo $post['comment'];?></p>
-                      
+                    <a href="#"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i> Like 1</a>
                     <a href="sample_bbs.php?action=delete&id=<?php echo $post['id'];?>" style="position: absolute;right: 10px;bottom: 10px;" onclick="return confirm('削除します、よろしいですか？');"><i class="fa fa-trash fa-lg"></i></a>
                 </div>
             </div>
